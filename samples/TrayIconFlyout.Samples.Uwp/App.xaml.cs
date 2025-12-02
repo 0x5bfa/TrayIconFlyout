@@ -1,11 +1,10 @@
 ﻿// Copyright (c) 0x5BFA. All rights reserved.
 // Licensed under the MIT license.
 
-using System.Threading;
-using Windows.System;
+using Windows.ApplicationModel;
+using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media.Animation;
 
 namespace U5BFA.Libraries
 {
@@ -14,18 +13,33 @@ namespace U5BFA.Libraries
 		public App()
 		{
 			InitializeComponent();
+
+			Suspending += OnSuspending;
 		}
 
-		public App(XamlIslandWindow host)
+		protected override void OnLaunched(LaunchActivatedEventArgs e)
 		{
-			var source = host.InitializeXamlIsland();
+			if (Window.Current.Content is not Frame rootFrame)
+			{
+				rootFrame = new Frame();
+				Window.Current.Content = rootFrame;
+			}
 
-			SynchronizationContext.SetSynchronizationContext(new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread()));
+			if (!e.PrelaunchActivated)
+			{
+				if (rootFrame.Content is null)
+					rootFrame.Navigate(typeof(MainPage), e.Arguments);
+				Window.Current.Activate();
+			}
 
-			var frame = new Frame();
-			source.Content = frame;
-			frame.Margin = new(12);
-			frame.Navigate(typeof(MainPage), null, new SuppressNavigationTransitionInfo());
+			TrayIconManager.Default.Initialize();
+		}
+
+		private void OnSuspending(object sender, SuspendingEventArgs e)
+		{
+			SuspendingDeferral deferral = e.SuspendingOperation.GetDeferral();
+
+			deferral.Complete();
 		}
 	}
 }

@@ -1,5 +1,5 @@
 <local:TrayIconFlyout
-    x:Class="U5BFA.TrayIconFlyout.MainTrayIconFlyout"
+    x:Class="U5BFA.Libraries.MainTrayIconFlyout"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"

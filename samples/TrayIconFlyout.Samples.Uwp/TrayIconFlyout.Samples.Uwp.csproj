@@ -16,6 +16,7 @@
 		<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<Nullable>enable</Nullable>
+		<LangVersion>preview</LangVersion>
 
 		<DisableEmbeddedXbf>true</DisableEmbeddedXbf>
 		<DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>

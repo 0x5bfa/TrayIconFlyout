@@ -21,9 +21,9 @@ namespace U5BFA.Libraries
 	[UnmanagedFunctionPointer(CallingConvention.Winapi)]
 	public delegate LRESULT WNDPROC([In] HWND hWnd, [In] uint uMsg, [In] WPARAM wParam, [In] LPARAM lParam);
 
-	public unsafe class XamlIslandWindow
+	public unsafe class XamlIslandHostWindow
 	{
-		private App _xamlApp = null;
+		private Application _xamlApp = null;
 
 		private WNDPROC _wndProc = default;
 
@@ -43,7 +43,7 @@ namespace U5BFA.Libraries
 
 		public required int Height { get; set; }
 
-		public XamlIslandWindow() { }
+		public XamlIslandHostWindow() { }
 
 		public void InitializeHost()
 		{

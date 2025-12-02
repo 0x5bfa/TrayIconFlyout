@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using Microsoft.UI.Xaml;
+using System;
 
 namespace U5BFA.Libraries
 {
@@ -12,6 +13,8 @@ namespace U5BFA.Libraries
 		public App()
 		{
 			InitializeComponent();
+
+			AppDomain.CurrentDomain.ProcessExit += AppDomain_ProcessExit;
 		}
 
 		protected override void OnLaunched(LaunchActivatedEventArgs args)
@@ -23,7 +26,7 @@ namespace U5BFA.Libraries
 			TrayIconManager.Default.Initialize();
 		}
 
-		~App()
+		private void AppDomain_ProcessExit(object? sender, EventArgs e)
 		{
 			TrayIconManager.Default.Dispose();
 		}

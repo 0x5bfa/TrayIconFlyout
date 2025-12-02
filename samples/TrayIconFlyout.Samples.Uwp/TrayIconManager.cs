@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 using System;
+using Windows.UI.Xaml.Hosting;
+using Windows.Win32;
 
 namespace U5BFA.Libraries
 {
@@ -22,7 +24,7 @@ namespace U5BFA.Libraries
 			_systemTrayIcon = new SystemTrayIcon()
 			{
 				IconPath = "Assets\\Tray.ico",
-				Tooltip = "TrayIconFlyout sample app (WASDK)",
+				Tooltip = "TrayIconFlyout sample app (UWP)",
 				Id = new Guid("28DE460A-8BD6-4539-A406-5F685584FD4D")
 			};
 
