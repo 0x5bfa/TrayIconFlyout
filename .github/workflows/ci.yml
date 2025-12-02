@@ -38,13 +38,17 @@ jobs:
 
     steps:
     - name: Checkout the repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v2
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          9.0.x
+          10.0.x
 
     - name: Build the sample app (WASDK)
       run: msbuild /restore $env:WASDK_APP_CSPROJ_PATH /p:Configuration=$env:CONFIGURATION /p:Platform=$env:PLATFORM /p:AppxBundle=Never
