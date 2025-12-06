@@ -40,7 +40,6 @@ namespace U5BFA.Libraries
 
 			// Initialize XAML flyouts
 			_trayIconFlyout = new MainTrayIconFlyout();
-			_trayIconFlyout.HideOnLostFocus = false;
 			_trayIconMenuFlyout = new MainTrayIconMeunFlyout();
 
 			MSG msg;
@@ -79,7 +78,7 @@ namespace U5BFA.Libraries
 			if (_trayIconMenuFlyout.IsOpen)
 				_trayIconMenuFlyout.Hide();
 
-			_trayIconMenuFlyout.Show(e.Point);
+			_trayIconMenuFlyout.Show(new(e.Point.X, e.Point.Y - 32));
 		}
 	}
 }
