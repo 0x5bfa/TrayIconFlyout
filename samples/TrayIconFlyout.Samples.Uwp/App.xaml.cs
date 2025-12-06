@@ -27,7 +27,7 @@ namespace U5BFA.Libraries
 			{
 				IconPath = "Assets\\Tray.ico",
 				Tooltip = "TrayIconFlyout sample app (UWP)",
-				Id = new Guid("28DE460A-8BD6-4539-A406-5F685584FD4D")
+				Id = new Guid("022F5158-F05A-4FE1-B356-34F14B363625")
 			};
 
 			_systemTrayIcon.LeftClicked += SystemTrayIcon_LeftClicked;

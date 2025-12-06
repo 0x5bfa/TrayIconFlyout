@@ -13,13 +13,13 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
-
 #elif WASDK
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 #endif
 
@@ -30,6 +30,10 @@ namespace U5BFA.Libraries
 	{
 		private const string PART_RootGrid = "PART_RootGrid";
 		private const string PART_IslandsGrid = "PART_IslandsGrid";
+
+#if WASDK
+		private static readonly PersistentAcrylicBackdrop _persistentBackdrop = new();
+#endif
 
 		private readonly XamlIslandHostWindow? _host;
 		private bool? _wasTaskbarLightLastTimeChecked;
@@ -63,6 +67,10 @@ namespace U5BFA.Libraries
 				?? throw new MissingFieldException($"Could not find {PART_RootGrid} in the given {nameof(TrayIconFlyout)}'s style.");
 			IslandsGrid = GetTemplateChild(PART_IslandsGrid) as Grid
 				?? throw new MissingFieldException($"Could not find {PART_IslandsGrid} in the given {nameof(TrayIconFlyout)}'s style.");
+
+#if WASDK
+			LayoutUpdated += TrayIconFlyout_LayoutUpdated;
+#endif
 
 			UpdateIslands();
 		}
@@ -238,6 +246,21 @@ namespace U5BFA.Libraries
 				(int)_host.WindowSize.Width,
 				(int)_host.WindowSize.Height));
 		}
+
+#if WASDK
+		private void TrayIconFlyout_LayoutUpdated(object? sender, object e)
+		{
+			//if (_host?.DesktopWindowXamlSource is null)
+			//	return;
+
+			//var flyouts = VisualTreeHelper.GetOpenPopupsForXamlRoot(_host.DesktopWindowXamlSource.Content.XamlRoot);
+			//foreach (var flyout in flyouts)
+			//{
+			//	if (flyout.SystemBackdrop is not PersistentAcrylicBackdrop)
+			//		flyout.SystemBackdrop = _persistentBackdrop;
+			//}
+		}
+#endif
 
 		private void OpenAnimationStoryboard_Completed(object? sender, object e)
 		{

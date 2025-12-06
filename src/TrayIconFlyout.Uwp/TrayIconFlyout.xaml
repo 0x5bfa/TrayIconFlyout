@@ -42,7 +42,7 @@
 		<Setter Property="HorizontalAlignment" Value="Stretch" />
 		<Setter Property="VerticalAlignment" Value="Stretch" />
 		<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-		<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+		<Setter Property="VerticalContentAlignment" Value="Stretch" />
 		<Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
 		<Setter Property="BorderThickness" Value="1" />
 		<Setter Property="BorderBrush" Value="{ThemeResource SurfaceStrokeColorDefaultBrush}" />
@@ -62,7 +62,10 @@
 							<ThemeShadow />
 						</Grid.Shadow>
 
-						<ContentPresenter x:Name="PART_MainContentPresenter" />
+						<ContentPresenter
+							x:Name="PART_MainContentPresenter"
+							HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+							VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
 					</Grid>
 				</ControlTemplate>
 			</Setter.Value>

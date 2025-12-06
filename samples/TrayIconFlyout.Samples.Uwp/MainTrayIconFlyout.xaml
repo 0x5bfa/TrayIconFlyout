@@ -37,18 +37,7 @@
 	</local:TrayIconFlyout.Resources>
 
 	<local:TrayIconFlyoutIsland Height="300" Background="{ThemeResource FlyoutAcrylicBrush}">
-		<Button
-			HorizontalAlignment="Center"
-			VerticalAlignment="Center"
-			Content="Button">
-			<Button.Flyout>
-				<MenuFlyout>
-					<MenuFlyoutItem Text="A" />
-					<MenuFlyoutItem Text="A" />
-					<MenuFlyoutItem Text="A" />
-				</MenuFlyout>
-			</Button.Flyout>
-		</Button>
+		<Button Content="A" />
 	</local:TrayIconFlyoutIsland>
 	<local:TrayIconFlyoutIsland Height="300" Background="{ThemeResource FlyoutAcrylicBrush}">
 		<TextBlock
