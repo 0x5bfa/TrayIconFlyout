@@ -53,7 +53,7 @@ namespace U5BFA.Libraries
 			if (_trayIconMenuFlyout.IsOpen)
 				_trayIconMenuFlyout.Hide();
 
-			_trayIconMenuFlyout.Show(e.Point);
+			_trayIconMenuFlyout.Show(new(e.Point.X, e.Point.Y - 32));
 		}
 
 		public void Dispose()
