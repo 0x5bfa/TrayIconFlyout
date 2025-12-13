@@ -26,7 +26,7 @@ env:
   UWP_APP_PROJ_PATH:     '${{ github.workspace }}\samples\TrayIconFlyout.Uwp.Sample.Packaging\TrayIconFlyout.Uwp.Sample.Packaging.wapproj'
 
 jobs:
-  build:
+  build-wasdk:
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -53,6 +53,31 @@ jobs:
 
     - name: Build the sample app (WASDK)
       run: msbuild /restore $env:WASDK_APP_PROJ_PATH /p:Configuration=$env:CONFIGURATION /p:Platform=$env:PLATFORM /p:AppxBundle=Never
+
+  build-uwp:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+        platform: [x64, ARM64]
+    env:
+      CONFIGURATION: ${{ matrix.configuration }}
+      PLATFORM: ${{ matrix.platform }}
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v6
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: |
+          9.0.x
+          10.0.x
 
     - name: Build the sample app (UWP)
       run: msbuild /restore $env:UWP_APP_PROJ_PATH /p:Configuration=$env:CONFIGURATION /p:Platform=$env:PLATFORM /p:AppxBundle=Never
