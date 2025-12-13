@@ -1,8 +1,6 @@
 <Solution>
 
   <Configurations>
-    <Platform Name="Any CPU" />
-    <Platform Name="ARM" />
     <Platform Name="ARM64" />
     <Platform Name="x64" />
     <Platform Name="x86" />
@@ -21,8 +19,12 @@
       <Deploy />
     </Project>
     <Project Path="samples/TrayIconFlyout.Uwp.Sample.TrayHost/TrayIconFlyout.Uwp.Sample.TrayHost.csproj">
-      <Platform Solution="*|Any CPU" Project="x64" />
-      <Platform Solution="*|ARM" Project="x64" />
+      <Platform Solution="*|ARM64" Project="arm64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
+      <Deploy />
+    </Project>
+    <Project Path="samples/TrayIconFlyout.Uwp.Sample.SecondaryApp/TrayIconFlyout.Uwp.Sample.SecondaryApp.csproj" Id="669afa0c-a670-4ea7-8e55-cf575002b521">
       <Platform Solution="*|ARM64" Project="arm64" />
       <Platform Solution="*|x64" Project="x64" />
       <Platform Solution="*|x86" Project="x86" />
@@ -31,8 +33,6 @@
   </Folder>
   <Folder Name="/samples-wasdk/">
     <Project Path="samples/TrayIconFlyout.Wasdk.Sample.App/TrayIconFlyout.Wasdk.Sample.App.csproj">
-      <Platform Solution="*|Any CPU" Project="x64" />
-      <Platform Solution="*|ARM" Project="x64" />
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Platform Solution="*|x86" Project="x86" />
@@ -43,15 +43,11 @@
   <Folder Name="/src/">
     <Project Path="src/TrayIconFlyout.Shared/TrayIconFlyout.Shared.shproj" Id="97b61227-b152-453d-a2d1-f7a98fc83367" />
     <Project Path="src/TrayIconFlyout.Uwp/TrayIconFlyout.Uwp.csproj" Id="d3ef520c-8296-4e85-aaec-0b184e2be188">
-      <Platform Solution="*|Any CPU" Project="x64" />
-      <Platform Solution="*|ARM" Project="x64" />
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Platform Solution="*|x86" Project="x86" />
     </Project>
     <Project Path="src/TrayIconFlyout.Wasdk/TrayIconFlyout.Wasdk.csproj">
-      <Platform Solution="*|Any CPU" Project="x64" />
-      <Platform Solution="*|ARM" Project="x64" />
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Platform Solution="*|x86" Project="x86" />

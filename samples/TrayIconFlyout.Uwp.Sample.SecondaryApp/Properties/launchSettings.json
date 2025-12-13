@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "TrayIconFlyout.Uwp.Sample.SecondaryApp": {
+      "commandName": "MsixPackage"
+    }
+  }
+}
