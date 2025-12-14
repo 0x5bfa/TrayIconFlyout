@@ -32,7 +32,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\TrayIconFlyout.Uwp\TrayIconFlyout.Uwp.csproj" />
+		<ProjectReference Include="..\..\src\TrayIconFlyout.Uwp\TrayIconFlyout.Uwp.csproj" />
 	</ItemGroup>
 
 </Project>

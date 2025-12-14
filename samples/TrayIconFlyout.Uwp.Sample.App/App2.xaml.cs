@@ -4,6 +4,7 @@
 using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -41,6 +42,8 @@ namespace U5BFA.Libraries
 
 			if (rootFrame.Content == null)
 			{
+				CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true; 
+				
 				rootFrame.Navigate(typeof(MainPage), args.As<ProtocolActivatedEventArgs>().Data);
 			}
 

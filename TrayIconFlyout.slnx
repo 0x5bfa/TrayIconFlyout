@@ -18,14 +18,14 @@
     <Project Path="samples/TrayIconFlyout.Uwp.Sample.Packaging/TrayIconFlyout.Uwp.Sample.Packaging.wapproj" Type="c7167f0d-bc9f-4e6e-afe1-012c56b48db5" Id="8f9f53a2-0cda-4bb2-b6e9-060ce608dfb2">
       <Deploy />
     </Project>
-    <Project Path="samples/TrayIconFlyout.Uwp.Sample.TrayHost/TrayIconFlyout.Uwp.Sample.TrayHost.csproj">
-      <Platform Solution="*|ARM64" Project="arm64" />
+    <Project Path="samples/TrayIconFlyout.Uwp.Sample.App/TrayIconFlyout.Uwp.Sample.App.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Platform Solution="*|x86" Project="x86" />
       <Deploy />
     </Project>
-    <Project Path="samples/TrayIconFlyout.Uwp.Sample.SecondaryApp/TrayIconFlyout.Uwp.Sample.SecondaryApp.csproj" Id="669afa0c-a670-4ea7-8e55-cf575002b521">
-      <Platform Solution="*|ARM64" Project="arm64" />
+    <Project Path="samples/TrayIconFlyout.Uwp.Sample.TrayHost/TrayIconFlyout.Uwp.Sample.TrayHost.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Platform Solution="*|x86" Project="x86" />
       <Deploy />
