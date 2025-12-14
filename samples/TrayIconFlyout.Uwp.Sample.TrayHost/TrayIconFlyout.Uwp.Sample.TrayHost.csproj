@@ -22,6 +22,7 @@
 		<UseUwp>true</UseUwp>
 		<UseUwpTools>true</UseUwpTools>
 		<DisableEmbeddedXbf>false</DisableEmbeddedXbf>
+		<DefaultLanguage>en-US</DefaultLanguage>
 
 	</PropertyGroup>
 
