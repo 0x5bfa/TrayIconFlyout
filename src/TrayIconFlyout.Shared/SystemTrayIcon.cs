@@ -108,7 +108,20 @@ namespace U5BFA.Libraries
 			data.guidItem = Id;
 			data.dwState = IsVisible ? 0U : NOTIFY_ICON_STATE.NIS_HIDDEN;
 			data.uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP | NOTIFY_ICON_DATA_FLAGS.NIF_STATE | NOTIFY_ICON_DATA_FLAGS.NIF_GUID | NOTIFY_ICON_DATA_FLAGS.NIF_SHOWTIP;
-			data.szTip = Tooltip ?? string.Empty;
+
+			// Properly copy the tooltip string into the __char_128 struct
+			if (!string.IsNullOrEmpty(Tooltip))
+			{
+				var tipSpan = Tooltip.AsSpan();
+				int len = Math.Min(tipSpan.Length, 127); // __char_128 can hold up to 127 chars + null terminator
+				for (int i = 0; i < len; i++)
+					data.szTip.Value[i] = tipSpan[i];
+				data.szTip.Value[len] = '\0';
+			}
+			else
+			{
+				data.szTip.Value[0] = '\0';
+			}
 
 			if (_created)
 			{
