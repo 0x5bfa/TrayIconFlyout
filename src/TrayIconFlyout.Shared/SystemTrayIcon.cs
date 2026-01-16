@@ -114,8 +114,8 @@ namespace U5BFA.Libraries
 			{
 				var tipSpan = Tooltip.AsSpan();
 				int len = Math.Min(tipSpan.Length, 127); // __char_128 can hold up to 127 chars + null terminator
-				for (int i = 0; i < len; i++)
-					data.szTip.Value[i] = tipSpan[i];
+				var destSpan = new Span<char>(data.szTip.Value, len);
+				tipSpan.Slice(0, len).CopyTo(destSpan);
 				data.szTip.Value[len] = '\0';
 			}
 			else
