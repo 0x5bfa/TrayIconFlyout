@@ -18,8 +18,14 @@
 		<UseUwp>true</UseUwp>
 		<DisableEmbeddedXbf>false</DisableEmbeddedXbf>
 
-		<ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
-		<GeneratePackageOnBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</GeneratePackageOnBuild>
+		<Deterministic>true</Deterministic>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<DebugType>portable</DebugType>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<PackageId>0x5BFA.TrayIconFlyout.Uwp</PackageId>
 		<Title>0x5BFA.TrayIconFlyout.Uwp</Title>
 		<Authors>0x5BFA</Authors>
@@ -40,6 +46,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.Uwp.DependencyPropertyGenerator" Version="0.1.251101-build.2372" />
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.102" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
 		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.257" PrivateAssets="all" />
 	</ItemGroup>
 

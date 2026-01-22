@@ -37,13 +37,15 @@ jobs:
           10.0.x
 
     - name: Pack the project (WASDK)
-      run: dotnet build $env:WASDK_CSPROJ_PATH -c $env:CONFIGURATION -a $env:PLATFORM -o $env:WASDK_OUTPUT_DIR
+      run: dotnet build $env:WASDK_CSPROJ_PATH -c $env:CONFIGURATION -a $env:PLATFORM --include-symbols -o $env:WASDK_OUTPUT_DIR
 
     - name: Pack the project (UWP)
-      run: dotnet build $env:UWP_CSPROJ_PATH   -c $env:CONFIGURATION -a $env:PLATFORM -o $env:UWP_OUTPUT_DIR
+      run: dotnet build $env:UWP_CSPROJ_PATH   -c $env:CONFIGURATION -a $env:PLATFORM --include-symbols -o $env:UWP_OUTPUT_DIR
 
     - name: Upload nupkg artifacts
       uses: actions/upload-artifact@v4
       with:
         name: NuPkg artifacts
-        path: $env:OUTPUT_DIR\**\*.nupkg
+        path: |
+          ${{ env.OUTPUT_DIR }}\**\*.nupkg
+          ${{ env.OUTPUT_DIR }}\**\*.snupkg
