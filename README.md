@@ -7,13 +7,17 @@ You can consume this project via NuGet. Use NuGet Package Manager or run the fol
 
 ### UWP/WinUI 2
 
-```
+<a style="text-decoration:none" href="https://www.nuget.org/packages/0x5BFA.TrayIconFlyout.Uwp"><img src="https://img.shields.io/nuget/v/0x5BFA.TrayIconFlyout.Uwp" alt="NuGet badge" /></a>
+
+```console
 > dotnet add package 0x5BFA.TrayIconFlyout.Uwp --prerelease
 ```
 
 ### WindowsAppSDK/WinUI 3
 
-```
+<a style="text-decoration:none" href="https://www.nuget.org/packages/0x5BFA.TrayIconFlyout.WinUI"><img src="https://img.shields.io/nuget/v/0x5BFA.TrayIconFlyout.WinUI" alt="NuGet badge" /></a>
+
+```console
 > dotnet add package 0x5BFA.TrayIconFlyout.WinUI --prerelease
 ```
 
@@ -48,22 +52,9 @@ else
 ```xml
 <me:TrayIconMenuFlyout x:Class="..." ...>
 
-    <MenuFlyoutSubItem Text="Settings">
-        <MenuFlyoutSubItem.Icon>
-            <FontIcon Glyph="..." />
-        </MenuFlyoutSubItem.Icon>
-        <MenuFlyoutSubItem.Items>
-            <MenuFlyoutItem Text="Theme" />
-            <MenuFlyoutItem Text="Language" />
-            <MenuFlyoutItem Text="Privacy" />
-        </MenuFlyoutSubItem.Items>
-    </MenuFlyoutSubItem>
-    <MenuFlyoutSeparator />
-    <MenuFlyoutItem Text="Exit">
-        <MenuFlyoutItem.Icon>
-            <FontIcon Glyph="..." />
-        </MenuFlyoutItem.Icon>
-    </MenuFlyoutItem>
+    <MenuFlyoutItem Text="Theme" />
+    <MenuFlyoutItem Text="Language" />
+    <MenuFlyoutItem Text="Settings" />
 
 </me:TrayIconMenuFlyout>
 ```
