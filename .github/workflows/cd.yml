@@ -49,3 +49,6 @@ jobs:
         path: |
           ${{ env.OUTPUT_DIR }}\**\*.nupkg
           ${{ env.OUTPUT_DIR }}\**\*.snupkg
+
+    - name: Publish to NuGet.org
+      run: dotnet nuget push ${{ env.OUTPUT_DIR }}\**\*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
