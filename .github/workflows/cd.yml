@@ -16,7 +16,7 @@ env:
   UWP_OUTPUT_DIR:      '${{ github.workspace }}\artifacts\uwp'
 
 jobs:
-  build-wasdk:
+  build-pack-publish:
     runs-on: windows-latest
     env:
       CONFIGURATION: 'Release'
@@ -37,10 +37,10 @@ jobs:
           10.0.x
 
     - name: Pack the project (WASDK)
-      run: dotnet build $env:WASDK_CSPROJ_PATH -c $env:CONFIGURATION -a $env:PLATFORM --include-symbols -o $env:WASDK_OUTPUT_DIR
+      run: dotnet build $env:WASDK_CSPROJ_PATH -c $env:CONFIGURATION -a $env:PLATFORM -o $env:WASDK_OUTPUT_DIR
 
     - name: Pack the project (UWP)
-      run: dotnet build $env:UWP_CSPROJ_PATH   -c $env:CONFIGURATION -a $env:PLATFORM --include-symbols -o $env:UWP_OUTPUT_DIR
+      run: dotnet build $env:UWP_CSPROJ_PATH   -c $env:CONFIGURATION -a $env:PLATFORM -o $env:UWP_OUTPUT_DIR
 
     - name: Upload nupkg artifacts
       uses: actions/upload-artifact@v4
