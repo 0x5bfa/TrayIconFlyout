@@ -18,7 +18,8 @@
 		<UseUwp>true</UseUwp>
 		<DisableEmbeddedXbf>false</DisableEmbeddedXbf>
 
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+		<GeneratePackageOnBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</GeneratePackageOnBuild>
 		<PackageId>0x5BFA.TrayIconFlyout.Uwp</PackageId>
 		<Title>0x5BFA.TrayIconFlyout.Uwp</Title>
 		<Authors>0x5BFA</Authors>

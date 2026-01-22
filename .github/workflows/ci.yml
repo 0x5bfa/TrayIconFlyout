@@ -51,7 +51,7 @@ jobs:
           9.0.x
           10.0.x
 
-    - name: Build the sample app (WASDK)
+    - name: Build the sample app
       run: msbuild /restore $env:WASDK_APP_PROJ_PATH /p:Configuration=$env:CONFIGURATION /p:Platform=$env:PLATFORM /p:AppxBundle=Never
 
   build-uwp:
@@ -79,5 +79,5 @@ jobs:
           9.0.x
           10.0.x
 
-    - name: Build the sample app (UWP)
+    - name: Build the sample app
       run: msbuild /restore $env:UWP_APP_PROJ_PATH /p:Configuration=$env:CONFIGURATION /p:Platform=$env:PLATFORM /p:AppxBundle=Never

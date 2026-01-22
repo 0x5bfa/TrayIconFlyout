@@ -20,7 +20,8 @@
 
 		<CsWinRTIncludes>Microsoft.UI.Content.ContentExternalBackdropLink;Microsoft.UI.Content.IContentExternalBackdropLink</CsWinRTIncludes>
 
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+		<GeneratePackageOnBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</GeneratePackageOnBuild>
 		<PackageId>0x5BFA.TrayIconFlyout.WinUI</PackageId>
 		<Title>0x5BFA.TrayIconFlyout.WinUI</Title>
 		<Authors>0x5BFA</Authors>

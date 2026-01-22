@@ -8,12 +8,15 @@ on:
 
 env:
   WORKING_DIR:         '${{ github.workspace }}' # 'D:\a\TrayIconFlyout\TrayIconFlyout'
-  SOLUTION_PATH:       '${{ github.workspace }}\TrayIconFlyout.slnx'
-  WASDK_CSPROJ_PATH:   '${{ github.workspace }}\TrayIconFlyout.Wasdk\TrayIconFlyout.Wasdk.csproj'
+  SOLUTION_PATH:       '${{ github.workspace }}\src\TrayIconFlyout.slnx'
+  WASDK_CSPROJ_PATH:   '${{ github.workspace }}\src\TrayIconFlyout.Wasdk\TrayIconFlyout.Wasdk.csproj'
+  UWP_CSPROJ_PATH:     '${{ github.workspace }}\src\TrayIconFlyout.Uwp\TrayIconFlyout.Uwp.csproj'
+  OUTPUT_DIR:          '${{ github.workspace }}\artifacts'
+  WASDK_OUTPUT_DIR:    '${{ github.workspace }}\artifacts\wasdk'
+  UWP_OUTPUT_DIR:      '${{ github.workspace }}\artifacts\uwp'
 
 jobs:
-
-  build:
+  build-wasdk:
     runs-on: windows-latest
     env:
       CONFIGURATION: 'Release'
@@ -33,5 +36,14 @@ jobs:
           9.0.x
           10.0.x
 
-    # - name: pack the project
-    #   run: dotnet pack $env:WASDK_CSPROJ_PATH --configuration $env:CONFIGURATION --argument:Platform=$env:PLATFORM
+    - name: Pack the project (WASDK)
+      run: dotnet build $env:WASDK_CSPROJ_PATH -c $env:CONFIGURATION -a $env:PLATFORM -o $env:WASDK_OUTPUT_DIR
+
+    - name: Pack the project (UWP)
+      run: dotnet build $env:UWP_CSPROJ_PATH   -c $env:CONFIGURATION -a $env:PLATFORM -o $env:UWP_OUTPUT_DIR
+
+    - name: Upload nupkg artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: NuPkg artifacts
+        path: $env:OUTPUT_DIR\**\*.nupkg
