@@ -55,7 +55,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TrayIconFlyout.Uwp.Sample.SecondaryApp\TrayIconFlyout.Uwp.Sample.App.csproj">
+    <ProjectReference Include="..\TrayIconFlyout.Uwp.Sample.App\TrayIconFlyout.Uwp.Sample.App.csproj">
       <UseLowTrustEntryPoint>True</UseLowTrustEntryPoint>
       <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
       <PublishProfile>Properties\PublishProfiles\win-$(Platform).pubxml</PublishProfile>
