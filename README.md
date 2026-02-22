@@ -21,6 +21,8 @@ You can consume this project via NuGet. Use NuGet Package Manager or run the fol
 > dotnet add package 0x5BFA.TrayIconFlyout.WinUI --prerelease
 ```
 
+> If you want to use the features in WPF, please check out https://github.com/Jack251970/TrayIconFlyout.Wpf.
+
 ## Usage
 
 There are two flyouts are available in this project. One is `TrayIconFlyout` for the Shell Flyout behavior, and the other is `TrayIconMenuFlyout` for the Context Menu behavior.
