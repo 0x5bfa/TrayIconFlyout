@@ -28,8 +28,8 @@ namespace U5BFA.Libraries
 		[GeneratedDependencyProperty(DefaultValue = true)]
 		public partial bool IsBackdropEnabled { get; set; }
 
-		[GeneratedDependencyProperty(DefaultValue = Orientation.Vertical)]
-		public partial Orientation PopupDirection { get; set; }
+		[GeneratedDependencyProperty(DefaultValue = TrayIconFlyoutPopupDirection.Up)]
+		public partial TrayIconFlyoutPopupDirection PopupDirection { get; set; }
 
 		[GeneratedDependencyProperty(DefaultValue = Orientation.Vertical)]
 		public partial Orientation IslandsOrientation { get; set; }

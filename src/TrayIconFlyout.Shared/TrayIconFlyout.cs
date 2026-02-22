@@ -9,6 +9,7 @@ using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
@@ -18,6 +19,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
@@ -40,8 +42,10 @@ namespace U5BFA.Libraries
 		private bool? _wasTaskbarLightLastTimeChecked;
 		private bool? _wasTaskbarColorPrevalenceLastTimeChecked;
 		private bool _isPopupAnimationPlaying;
+        private TrayIconFlyoutPopupDirection _lastFlyoutPopupDirection;
+        private FlyoutPlacementMode _lastFlyoutPlacementMode;
 
-		private Grid? RootGrid;
+        private Grid? RootGrid;
 		private Grid? IslandsGrid;
 
 #if WASDK
@@ -84,7 +88,11 @@ namespace U5BFA.Libraries
 			_isPopupAnimationPlaying = true;
 			_host.Maximize();
 
-			_ = Task.Run(async () =>
+            // Cache the current animation and placement modes to ensure consistency during the animation
+            _lastFlyoutPopupDirection = PopupDirection;
+            _lastFlyoutPlacementMode = Placement;
+
+            _ = Task.Run(async () =>
 			{
 #if UWP
 				await RootGrid.Dispatcher.TryRunAsync(CoreDispatcherPriority.Normal, async () =>
@@ -101,27 +109,48 @@ namespace U5BFA.Libraries
 #endif
 					UpdateFlyoutRegion();
 
-					// Ensure to hide first
-					if (RootGrid.RenderTransform is TranslateTransform translateTransform)
-					{
-						if (PopupDirection is Orientation.Vertical)
-							translateTransform.Y = DesiredSize.Height;
-						else
-							translateTransform.X = DesiredSize.Width;
-					}
+                    // Ensure the render transform is a mutable TranslateTransform for animation
+                    if (RootGrid.RenderTransform is not TranslateTransform translateTransform)
+                    {
+                        RootGrid.RenderTransform = new TranslateTransform();
+                    }
+                    translateTransform = (TranslateTransform)RootGrid.RenderTransform;
+					
+					var transformOrientation = Orientation.Vertical;
+                    var transformSize = 0d;
+                    if (IsTransitionAnimationEnabled)
+                    {
+                        // Ensure to hide first and update the transform
+                        (transformOrientation, transformSize) = GetTranslateTransformInfo();
+                        if (transformOrientation is Orientation.Vertical)
+                        {
+                            translateTransform.X = 0;
+                            translateTransform.Y = transformSize;
+                        }
+                        else
+                        {
+                            translateTransform.X = transformSize;
+                            translateTransform.Y = 0;
+                        }
+                    }
+                    else
+                    {
+                        // Ensure the transform is reset to show the popup without animation
+                        translateTransform.X = translateTransform.Y = 0;
+                    }
 
-					UpdateLayout();
+                    UpdateLayout();
 					await Task.Delay(1);
 
 					_host.UpdateWindowVisibility(true);
 
 					if (IsTransitionAnimationEnabled)
 					{
-						var storyboard = PopupDirection is Orientation.Vertical
-							? TransitionHelpers.GetWindows11BottomToTopTransitionStoryboard(RootGrid, (int)DesiredSize.Height, 0)
-							: TransitionHelpers.GetWindows11RightToLeftTransitionStoryboard(RootGrid, (int)DesiredSize.Width, 0);
-						storyboard.Begin();
-						storyboard.Completed += OpenAnimationStoryboard_Completed;
+						var storyboard = transformOrientation is Orientation.Vertical
+                            ? TransitionHelpers.GetWindows11BottomToTopTransitionStoryboard(RootGrid, (int)transformSize, 0)
+							: TransitionHelpers.GetWindows11RightToLeftTransitionStoryboard(RootGrid, (int)transformSize, 0);
+                        storyboard.Completed += OpenAnimationStoryboard_Completed;
+                        storyboard.Begin();
 					}
 				});
 			});
@@ -136,13 +165,26 @@ namespace U5BFA.Libraries
 
 			if (IsTransitionAnimationEnabled)
 			{
-				var storyboard = PopupDirection is Orientation.Vertical
-					? TransitionHelpers.GetWindows11TopToBottomTransitionStoryboard(RootGrid, 0, (int)DesiredSize.Height)
-					: TransitionHelpers.GetWindows11LeftToRightTransitionStoryboard(RootGrid, 0, (int)DesiredSize.Width);
-				storyboard.Begin();
-				storyboard.Completed += CloseAnimationStoryboard_Completed;
+                var transformInfo = GetTranslateTransformInfo();
+                var storyboard = transformInfo.Orientation is Orientation.Vertical
+                    ? TransitionHelpers.GetWindows11TopToBottomTransitionStoryboard(RootGrid, 0, (int)transformInfo.Size)
+					: TransitionHelpers.GetWindows11LeftToRightTransitionStoryboard(RootGrid, 0, (int)transformInfo.Size);
+                storyboard.Completed += CloseAnimationStoryboard_Completed;
+                storyboard.Begin();
 			}
 		}
+
+        private (Orientation Orientation, double Size) GetTranslateTransformInfo()
+        {
+            return _lastFlyoutPopupDirection switch
+            {
+                TrayIconFlyoutPopupDirection.Up => (Orientation.Vertical, DesiredSize.Height),
+                TrayIconFlyoutPopupDirection.Down => (Orientation.Vertical, -DesiredSize.Height),
+                TrayIconFlyoutPopupDirection.Right => (Orientation.Horizontal, -DesiredSize.Width),
+                TrayIconFlyoutPopupDirection.Left => (Orientation.Horizontal, DesiredSize.Width),
+                _ => ((Orientation Orientation, double Size))(Orientation.Vertical, 0),
+            };
+        }
 
 #if UWP
 		public unsafe bool TryPreTranslateMessage(MSG* msg)
@@ -152,7 +194,7 @@ namespace U5BFA.Libraries
 #endif
 
 #if WASDK
-		private void UpdateBackdropManager(bool coerce = false)
+        private void UpdateBackdropManager(bool coerce = false)
 		{
 			var isTaskbarLight = GeneralHelpers.IsTaskbarLight();
 			var isTaskbarColorPrevalence = GeneralHelpers.IsTaskbarColorPrevalenceEnabled();

@@ -22,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TrayIconFlyout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TrayIconFlyout.Properties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TrayIconFlyoutIsland.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TrayIconFlyoutPopupDirection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TrayIconMenuFlyout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\WindowHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XamlIslandApplication.cs" />

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,8 +31,8 @@ namespace U5BFA.Libraries
 		[ObservableProperty]
 		internal partial int SelectedBackdropIndex { get; set; }
 
-		public Dictionary<Orientation, string> PopupDirections { get; private set; } = [];
-		public Dictionary<FlyoutPlacementMode, string> FlyoutPlacements { get; private set; } = [];
+        public Dictionary<TrayIconFlyoutPopupDirection, string> PopupDirections { get; private set; } = [];
+        public Dictionary<FlyoutPlacementMode, string> FlyoutPlacements { get; private set; } = [];
 		public Dictionary<BackdropKind, string> Backdrops { get; private set; } = [];
 
 		internal RootViewModel()
@@ -44,11 +43,13 @@ namespace U5BFA.Libraries
 			IsBackdropEnabled = true;
 			HideOnLostFocus = true;
 
-			PopupDirections.Add(Orientation.Vertical, "Vertical");
-			PopupDirections.Add(Orientation.Horizontal, "Horizontal");
-			SelectedPopupDirectionIndex = 0;
+            PopupDirections.Add(TrayIconFlyoutPopupDirection.Up, "Up");
+            PopupDirections.Add(TrayIconFlyoutPopupDirection.Down, "Down");
+            PopupDirections.Add(TrayIconFlyoutPopupDirection.Left, "Left");
+            PopupDirections.Add(TrayIconFlyoutPopupDirection.Right, "Right");
+            SelectedPopupDirectionIndex = 0;
 
-			FlyoutPlacements.Add(FlyoutPlacementMode.TopEdgeAlignedLeft, "Top left");
+            FlyoutPlacements.Add(FlyoutPlacementMode.TopEdgeAlignedLeft, "Top left");
 			FlyoutPlacements.Add(FlyoutPlacementMode.TopEdgeAlignedRight, "Top right");
 			FlyoutPlacements.Add(FlyoutPlacementMode.BottomEdgeAlignedLeft, "Bottom left");
 			FlyoutPlacements.Add(FlyoutPlacementMode.BottomEdgeAlignedRight, "Bottom right");
