@@ -152,6 +152,11 @@ namespace U5BFA.Libraries
 						storyboard.Completed += OpenAnimationStoryboard_Completed;
 						storyboard.Begin();
 					}
+					else
+					{
+						IsOpen = true;
+						_isPopupAnimationPlaying = false;
+					}
 				});
 			});
 		}
@@ -171,6 +176,12 @@ namespace U5BFA.Libraries
 					: TransitionHelpers.GetWindows11LeftToRightTransitionStoryboard(RootGrid, 0, (int)transformInfo.Size);
 				storyboard.Completed += CloseAnimationStoryboard_Completed;
 				storyboard.Begin();
+			}
+			else
+			{
+				_host?.UpdateWindowVisibility(false);
+				IsOpen = false;
+				_isPopupAnimationPlaying = false;
 			}
 		}
 
