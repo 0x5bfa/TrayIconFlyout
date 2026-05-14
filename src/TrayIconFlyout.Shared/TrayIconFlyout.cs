@@ -102,13 +102,8 @@ namespace U5BFA.Libraries
 					UpdateFlyoutRegion();
 
 					// Ensure to hide first
-					if (RootGrid.RenderTransform is TranslateTransform translateTransform)
-					{
-						if (PopupDirection is Orientation.Vertical)
-							translateTransform.Y = DesiredSize.Height;
-						else
-							translateTransform.X = DesiredSize.Width;
-					}
+					var popupDirection = PopupDirection;
+					SetClosedTransform(popupDirection);
 
 					UpdateLayout();
 					await Task.Delay(1);
@@ -117,11 +112,15 @@ namespace U5BFA.Libraries
 
 					if (IsTransitionAnimationEnabled)
 					{
-						var storyboard = PopupDirection is Orientation.Vertical
+						var storyboard = popupDirection is Orientation.Vertical
 							? TransitionHelpers.GetWindows11BottomToTopTransitionStoryboard(RootGrid, (int)DesiredSize.Height, 0)
 							: TransitionHelpers.GetWindows11RightToLeftTransitionStoryboard(RootGrid, (int)DesiredSize.Width, 0);
-						storyboard.Begin();
 						storyboard.Completed += OpenAnimationStoryboard_Completed;
+						storyboard.Begin();
+					}
+					else
+					{
+						CompleteOpen();
 					}
 				});
 			});
@@ -133,14 +132,20 @@ namespace U5BFA.Libraries
 				return;
 
 			_isPopupAnimationPlaying = true;
+			SetOpenTransform();
 
 			if (IsTransitionAnimationEnabled)
 			{
-				var storyboard = PopupDirection is Orientation.Vertical
+				var popupDirection = PopupDirection;
+				var storyboard = popupDirection is Orientation.Vertical
 					? TransitionHelpers.GetWindows11TopToBottomTransitionStoryboard(RootGrid, 0, (int)DesiredSize.Height)
 					: TransitionHelpers.GetWindows11LeftToRightTransitionStoryboard(RootGrid, 0, (int)DesiredSize.Width);
-				storyboard.Begin();
 				storyboard.Completed += CloseAnimationStoryboard_Completed;
+				storyboard.Begin();
+			}
+			else
+			{
+				CompleteClose();
 			}
 		}
 
@@ -280,8 +285,8 @@ namespace U5BFA.Libraries
 				return;
 
 			storyboard.Completed -= OpenAnimationStoryboard_Completed;
-			_isPopupAnimationPlaying = false;
-			IsOpen = true;
+			storyboard.Stop();
+			CompleteOpen();
 		}
 
 		private void CloseAnimationStoryboard_Completed(object? sender, object e)
@@ -290,9 +295,49 @@ namespace U5BFA.Libraries
 				return;
 
 			storyboard.Completed -= CloseAnimationStoryboard_Completed;
+			storyboard.Stop();
+			CompleteClose();
+		}
+
+		private void CompleteOpen()
+		{
+			SetOpenTransform();
+			_isPopupAnimationPlaying = false;
+			IsOpen = true;
+		}
+
+		private void CompleteClose()
+		{
+			SetClosedTransform(PopupDirection);
 			_isPopupAnimationPlaying = false;
 			IsOpen = false;
 			_host?.UpdateWindowVisibility(false);
+		}
+
+		private void SetOpenTransform()
+		{
+			if (RootGrid?.RenderTransform is not TranslateTransform translateTransform)
+				return;
+
+			translateTransform.X = 0;
+			translateTransform.Y = 0;
+		}
+
+		private void SetClosedTransform(Orientation popupDirection)
+		{
+			if (RootGrid?.RenderTransform is not TranslateTransform translateTransform)
+				return;
+
+			if (popupDirection is Orientation.Vertical)
+			{
+				translateTransform.X = 0;
+				translateTransform.Y = DesiredSize.Height;
+			}
+			else
+			{
+				translateTransform.X = DesiredSize.Width;
+				translateTransform.Y = 0;
+			}
 		}
 
 		private void HostWindow_Inactivated(object? sender, EventArgs e)
