@@ -159,6 +159,9 @@ namespace U5BFA.Libraries
 #if WASDK
 		private void UpdateBackdropManager(bool coerce = false)
 		{
+			if (IslandsGrid is null)
+				return;
+
 			var isTaskbarLight = GeneralHelpers.IsTaskbarLight();
 			var isTaskbarColorPrevalence = GeneralHelpers.IsTaskbarColorPrevalenceEnabled();
 			bool shouldUpdateBackdrop = _wasTaskbarLightLastTimeChecked != isTaskbarLight || _wasTaskbarColorPrevalenceLastTimeChecked != isTaskbarColorPrevalence;
