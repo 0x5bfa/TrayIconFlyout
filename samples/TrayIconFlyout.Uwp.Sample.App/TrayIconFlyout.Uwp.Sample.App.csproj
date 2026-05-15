@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	
 	<PropertyGroup>
 
@@ -15,6 +15,7 @@
 		<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>preview</LangVersion>
+		<DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<EnableMsixTooling>true</EnableMsixTooling>
 
@@ -27,14 +28,17 @@
 
 	<ItemGroup>
 		<Manifest Include="$(ApplicationManifest)" />
-		<Page Remove="App2.xaml" />
-		<ApplicationDefinition Include="App2.xaml" />
+		<Content Include="Assets\*.png" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.UI.Xaml" Version="2.8.7" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="CommunityToolkit.Uwp.Controls.SettingsControls" Version="8.2.250402" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\TrayIconFlyout.Uwp.Sample.TrayHost\TrayIconFlyout.Uwp.Sample.TrayHost.csproj" />
 	</ItemGroup>
 
 </Project>

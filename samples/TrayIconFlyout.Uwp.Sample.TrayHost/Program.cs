@@ -10,7 +10,7 @@ namespace U5BFA.Libraries
 		[STAThread]
 		static void Main()
 		{
-			_ = new App();
+			_ = new TrayHostApp();
 		}
 	}
 }

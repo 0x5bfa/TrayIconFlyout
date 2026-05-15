@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using Windows.ApplicationModel.Core;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace U5BFA.Libraries
