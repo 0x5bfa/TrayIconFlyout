@@ -27,7 +27,7 @@ env:
 
 jobs:
   build-wasdk:
-    runs-on: windows-latest
+    runs-on: windows-2025-vs2026
     strategy:
       fail-fast: false
       matrix:
@@ -41,9 +41,9 @@ jobs:
     - name: Checkout the repository
       uses: actions/checkout@v6
     - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
+      uses: microsoft/setup-msbuild@v3
     - name: Setup NuGet
-      uses: NuGet/setup-nuget@v2
+      uses: NuGet/setup-nuget@v4
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
@@ -55,7 +55,7 @@ jobs:
       run: msbuild /restore $env:WASDK_APP_PROJ_PATH /p:Configuration=$env:CONFIGURATION /p:Platform=$env:PLATFORM /p:AppxBundle=Never
 
   build-uwp:
-    runs-on: windows-latest
+    runs-on: windows-2025-vs2026
     strategy:
       fail-fast: false
       matrix:
@@ -69,9 +69,9 @@ jobs:
     - name: Checkout the repository
       uses: actions/checkout@v6
     - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
+      uses: microsoft/setup-msbuild@v3
     - name: Setup NuGet
-      uses: NuGet/setup-nuget@v2
+      uses: NuGet/setup-nuget@v4
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
       with:
