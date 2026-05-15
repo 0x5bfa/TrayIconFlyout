@@ -76,6 +76,10 @@ namespace U5BFA.Libraries
 			_propertyChangedCallbackTokenForContentProperty = RegisterPropertyChangedCallback(ContentProperty, (s, e) => ((TrayIconFlyoutIsland)s).OnContentChanged());
 			_propertyChangedCallbackTokenForCornerRadiusProperty = RegisterPropertyChangedCallback(CornerRadiusProperty, (s, e) => ((TrayIconFlyoutIsland)s).OnCornerRadiusChanged());
 
+#if WASDK
+			SizeChanged += TrayIconFlyoutIsland_SizeChanged;
+			MainContentPresenter.SizeChanged += MainContentPresenter_SizeChanged;
+#endif
 			Unloaded += TrayIconFlyoutIsland_Unloaded;
 		}
 
@@ -173,9 +177,27 @@ namespace U5BFA.Libraries
 #endif
 		}
 
+#if WASDK
+		private void TrayIconFlyoutIsland_SizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			UpdateBackdropVisual();
+		}
+
+		private void MainContentPresenter_SizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			UpdateBackdropVisual();
+		}
+#endif
+
 		private void TrayIconFlyoutIsland_Unloaded(object sender, RoutedEventArgs e)
 		{
 			Unloaded -= TrayIconFlyoutIsland_Unloaded;
+#if WASDK
+			SizeChanged -= TrayIconFlyoutIsland_SizeChanged;
+
+			if (MainContentPresenter is not null)
+				MainContentPresenter.SizeChanged -= MainContentPresenter_SizeChanged;
+#endif
 
 			UnregisterPropertyChangedCallback(ContentProperty, _propertyChangedCallbackTokenForContentProperty);
 			UnregisterPropertyChangedCallback(CornerRadiusProperty, _propertyChangedCallbackTokenForCornerRadiusProperty);

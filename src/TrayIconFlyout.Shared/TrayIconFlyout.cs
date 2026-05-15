@@ -343,6 +343,9 @@ namespace U5BFA.Libraries
 			UpdateLayout();
 			_activePopupDirection = UpdateFlyoutRegion();
 			SetOpenTransform();
+#if WASDK
+			UpdateBackdrop(true);
+#endif
 		}
 
 		private void ResetResolvedFlyoutSize()

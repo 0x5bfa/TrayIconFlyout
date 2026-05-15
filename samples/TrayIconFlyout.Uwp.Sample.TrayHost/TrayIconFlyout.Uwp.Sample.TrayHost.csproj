@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<Import Project="..\..\src\TrayIconFlyout.Uwp\TrayIconFlyout.Uwp.props" />
 
@@ -10,17 +10,18 @@
 		<Platforms>x86;x64;arm64</Platforms>
 		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
-		<RootNamespace>U5BFA.Libraries</RootNamespace>
 		<Nullable>enable</Nullable>
-		<PublishAot>true</PublishAot>
-		<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>preview</LangVersion>
+
+		<RootNamespace>U5BFA.Libraries</RootNamespace>
+		<PublishAot>true</PublishAot>
+		<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<EnableMsixTooling>true</EnableMsixTooling>
 
 		<UseUwp>true</UseUwp>
-		<UseUwpTools>true</UseUwpTools>
-		<DisableEmbeddedXbf>false</DisableEmbeddedXbf>
+		<DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
 		<DefaultLanguage>en-US</DefaultLanguage>
 
 	</PropertyGroup>
