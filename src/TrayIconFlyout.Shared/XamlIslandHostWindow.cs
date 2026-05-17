@@ -34,10 +34,11 @@ namespace U5BFA.Libraries
 {
 	internal unsafe partial class XamlIslandHostWindow : IDisposable
 	{
-		private const string WindowClassName = "TrayIconFlyoutHostClass";
+		private const string WindowClassNamePrefix = "TrayIconFlyoutHostClass";
 		private const string WindowName = "TrayIconFlyoutHostWindow";
 
 		private readonly WNDPROC _wndProc;
+		private readonly string _windowClassName = $"{WindowClassNamePrefix}.{Guid.NewGuid():N}";
 
 		private HWND _xamlHwnd = default;
 		private bool _disposed;
@@ -100,12 +101,12 @@ namespace U5BFA.Libraries
 			WNDCLASSW wndClass = default;
 			wndClass.lpfnWndProc = (delegate* unmanaged[Stdcall]<HWND, uint, WPARAM, LPARAM, LRESULT>)Marshal.GetFunctionPointerForDelegate(_wndProc);
 			wndClass.hInstance = PInvoke.GetModuleHandle(null);
-			wndClass.lpszClassName = (PCWSTR)Unsafe.AsPointer(ref Unsafe.AsRef(in WindowClassName.GetPinnableReference()));
+			wndClass.lpszClassName = (PCWSTR)Unsafe.AsPointer(ref Unsafe.AsRef(in _windowClassName.GetPinnableReference()));
 			PInvoke.RegisterClass(&wndClass);
 
 			HWnd = PInvoke.CreateWindowEx(
 				WINDOW_EX_STYLE.WS_EX_NOREDIRECTIONBITMAP | WINDOW_EX_STYLE.WS_EX_TOOLWINDOW | WINDOW_EX_STYLE.WS_EX_TOPMOST,
-				(PCWSTR)Unsafe.AsPointer(ref Unsafe.AsRef(in WindowClassName.GetPinnableReference())),
+				(PCWSTR)Unsafe.AsPointer(ref Unsafe.AsRef(in _windowClassName.GetPinnableReference())),
 				(PCWSTR)Unsafe.AsPointer(ref Unsafe.AsRef(in WindowName.GetPinnableReference())),
 				WINDOW_STYLE.WS_POPUP, 0, 0, 0, 0, HWND.Null, HMENU.Null, wndClass.hInstance, null);
 
@@ -297,7 +298,7 @@ namespace U5BFA.Libraries
 			DesktopWindowXamlSource = null;
 
 			PInvoke.DestroyWindow(HWnd);
-			PInvoke.UnregisterClass((PCWSTR)Unsafe.AsPointer(ref Unsafe.AsRef(in WindowClassName.GetPinnableReference())), PInvoke.GetModuleHandle(null));
+			PInvoke.UnregisterClass((PCWSTR)Unsafe.AsPointer(ref Unsafe.AsRef(in _windowClassName.GetPinnableReference())), PInvoke.GetModuleHandle(null));
 
 			HWnd = default;
 			_xamlHwnd = default;
