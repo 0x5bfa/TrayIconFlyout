@@ -74,11 +74,12 @@ namespace U5BFA.Libraries
             ActivationModes.Add(FlyoutActivationMode.NeverActivate, "Never activate");
             SelectedActivationModeIndex = 0;
 
-            FlyoutExamples.Add(FlyoutSampleKinds.DefaultStyle, "Default");
-            FlyoutExamples.Add(FlyoutSampleKinds.StickySmallStyle, "Sticky small");
-            FlyoutExamples.Add(FlyoutSampleKinds.StartMenuStyle, "Start menu");
-            FlyoutExamples.Add(FlyoutSampleKinds.WidgetStyle, "Widget");
+            FlyoutExamples.Add(FlyoutSampleKinds.Customizable, "Default");
             FlyoutExamples.Add(FlyoutSampleKinds.IndicatorStyle, "Indicator");
+            FlyoutExamples.Add(FlyoutSampleKinds.NotificationCenterStyle, "Notification Center");
+            FlyoutExamples.Add(FlyoutSampleKinds.StartMenuStyle, "Start Menu");
+            FlyoutExamples.Add(FlyoutSampleKinds.StickySmallStyle, "Sticky small");
+            FlyoutExamples.Add(FlyoutSampleKinds.WidgetStyle, "Widget");
             SelectedFlyoutExampleIndex = 0;
 
             PopupDirections.Add(TrayIconFlyoutPopupDirection.Vertical, "Vertical");
@@ -155,7 +156,7 @@ namespace U5BFA.Libraries
             var flyoutKind = FlyoutExamples.ElementAt(value).Key;
 
             TrayIconManager.Default.SwitchFlyout(flyoutKind);
-            if (flyoutKind is FlyoutSampleKinds.DefaultStyle)
+            if (flyoutKind is FlyoutSampleKinds.Customizable)
             {
                 IsModifiable = true;
                 ApplyDefaultFlyoutSettings();
@@ -203,7 +204,7 @@ namespace U5BFA.Libraries
 
         private static bool IsDefaultFlyoutSelected()
         {
-            return TrayIconManager.Default.TrayIconFlyout is MainTrayIconFlyout;
+            return TrayIconManager.Default.TrayIconFlyout is CustomizableFlyout;
         }
 
         private static GridLength ToGridLength(double value)

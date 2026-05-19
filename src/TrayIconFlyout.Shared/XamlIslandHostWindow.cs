@@ -347,7 +347,7 @@ namespace U5BFA.Libraries
 
         internal void NavigateFocus()
         {
-            DesktopWindowXamlSource?.NavigateFocus(new XamlSourceFocusNavigationRequest(XamlSourceFocusNavigationReason.First));
+            DesktopWindowXamlSource?.NavigateFocus(new XamlSourceFocusNavigationRequest(XamlSourceFocusNavigationReason.Down));
         }
 
         private static void SetNoActivateStyle(HWND hWnd, bool enabled)

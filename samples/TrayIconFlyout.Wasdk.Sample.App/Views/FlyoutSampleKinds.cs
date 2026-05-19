@@ -5,10 +5,19 @@ namespace U5BFA.Libraries
 {
     internal enum FlyoutSampleKinds
     {
-        DefaultStyle,
-        StickySmallStyle,
-        StartMenuStyle,
-        WidgetStyle,
+        /// <summary>
+        /// The customizable flyout. When selected, the flyout will be shown with all the features enabled and being customizable.
+        /// </summary>
+        Customizable,
+
         IndicatorStyle,
+
+        NotificationCenterStyle,
+
+        StartMenuStyle,
+
+        StickySmallStyle,
+
+        WidgetStyle,
     }
 }

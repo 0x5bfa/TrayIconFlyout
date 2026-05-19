@@ -48,11 +48,12 @@ namespace U5BFA.Libraries
         {
             return example switch
             {
-                FlyoutSampleKinds.StickySmallStyle => new StickySmallTrayIconFlyout(),
-                FlyoutSampleKinds.StartMenuStyle => new StartMenuStyleTrayIconFlyout(),
-                FlyoutSampleKinds.WidgetStyle => new WidgetStyleTrayIconFlyout(),
                 FlyoutSampleKinds.IndicatorStyle => new IndicatorStyleFlyout(),
-                _ => new MainTrayIconFlyout(),
+                FlyoutSampleKinds.NotificationCenterStyle => new NotificationCenterStyleFlyout(),
+                FlyoutSampleKinds.StartMenuStyle => new StartMenuStyleFlyout(),
+                FlyoutSampleKinds.StickySmallStyle => new StickySmallFlyout(),
+                FlyoutSampleKinds.WidgetStyle => new WidgetStyleFlyout(),
+                _ => new CustomizableFlyout(),
             };
         }
 
@@ -67,7 +68,7 @@ namespace U5BFA.Libraries
             }
             else
             {
-                if (TrayIconFlyout is StickySmallTrayIconFlyout && point is not null)
+                if (TrayIconFlyout is StickySmallFlyout && point is not null)
                 {
                     TrayIconFlyout.Show(point.Value);
 

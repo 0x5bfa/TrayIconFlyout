@@ -3,9 +3,9 @@
 
 namespace U5BFA.Libraries
 {
-    public sealed partial class MainTrayIconFlyout : TrayIconFlyout
+    public sealed partial class WidgetStyleFlyout : TrayIconFlyout
     {
-        public MainTrayIconFlyout()
+        public WidgetStyleFlyout()
         {
             InitializeComponent();
         }
