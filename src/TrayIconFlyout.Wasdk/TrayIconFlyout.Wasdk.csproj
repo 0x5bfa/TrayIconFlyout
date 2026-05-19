@@ -38,6 +38,7 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/0x5bfa/TrayIconFlyout</RepositoryUrl>
 		<PackageTags>Shell System Tray Icon Flyout UWP WinUI MUX WASDK WindowsAppSDK Windows</PackageTags>
+		<PackageIcon>icon-128.png</PackageIcon>
 
 	</PropertyGroup>
 
@@ -45,6 +46,7 @@
 		<CsWinRTInputs Include="Microsoft.UI.winmd" /> <!--  Extracted from the WASDK 1.8 MSIX package installation  -->
 		<None Include="..\..\.nuget\README.md" Pack="true" PackagePath="" />
 		<None Include="..\..\LICENSE" Pack="true" PackagePath="" />
+		<None Include="..\..\.nuget\icon-128.png" Pack="true" PackagePath="" />
 	</ItemGroup>
 
 	<ItemGroup>

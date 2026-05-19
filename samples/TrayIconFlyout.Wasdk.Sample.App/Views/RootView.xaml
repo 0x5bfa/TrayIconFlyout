@@ -42,7 +42,7 @@
                     Text="Flyout settings" />
                 <wctcontrols:SettingsCard Header="Flyout example">
                     <ComboBox
-                        Width="180"
+                        Width="150"
                         ItemsSource="{x:Bind ViewModel.FlyoutExamples.Values}"
                         SelectedIndex="{x:Bind ViewModel.SelectedFlyoutExampleIndex, Mode=TwoWay}" />
                 </wctcontrols:SettingsCard>
@@ -96,7 +96,7 @@
                 </wctcontrols:SettingsCard>
                 <wctcontrols:SettingsCard Header="Activation mode">
                     <ComboBox
-                        Width="190"
+                        Width="150"
                         IsEnabled="{x:Bind ViewModel.IsModifiable, Mode=OneWay}"
                         ItemsSource="{x:Bind ViewModel.ActivationModes.Values}"
                         SelectedIndex="{x:Bind ViewModel.SelectedActivationModeIndex, Mode=TwoWay}" />

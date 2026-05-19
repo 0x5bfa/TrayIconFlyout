@@ -20,7 +20,7 @@ namespace U5BFA.Libraries
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             TrayIconManager.Default.Initialize(new(
-                "Assets\\Tray.ico",
+                "Assets\\tray.ico",
                 "TrayIconFlyout sample app (WASDK)",
                 new("28DE460A-8BD6-4539-A406-5F685584FD4D")));
 

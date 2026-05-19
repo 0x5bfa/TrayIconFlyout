@@ -128,8 +128,11 @@ namespace U5BFA.Libraries
         public void Show()
         {
             HICON hIcon = (HICON)(void*)PInvoke.LoadImage(
-                HINSTANCE.Null, (PCWSTR)Unsafe.AsPointer(ref Unsafe.AsRef(in IconPath.GetPinnableReference())),
-                GDI_IMAGE_TYPE.IMAGE_ICON, cx: 0, cy: 0, IMAGE_FLAGS.LR_LOADFROMFILE | IMAGE_FLAGS.LR_DEFAULTSIZE);
+                HINSTANCE.Null,
+                (PCWSTR)Unsafe.AsPointer(ref Unsafe.AsRef(in IconPath.GetPinnableReference())),
+                GDI_IMAGE_TYPE.IMAGE_ICON,
+                cx: 0, cy: 0,
+                IMAGE_FLAGS.LR_LOADFROMFILE | IMAGE_FLAGS.LR_DEFAULTSIZE);
             if (hIcon.IsNull)
                 return;
 

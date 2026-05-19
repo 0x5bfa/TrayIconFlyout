@@ -24,10 +24,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="Views\NotificationCenterStyleFlyout.xaml" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Manifest Include="$(ApplicationManifest)" />
 	</ItemGroup>
 
@@ -41,12 +37,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\TrayIconFlyout.Wasdk\TrayIconFlyout.Wasdk.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Page Update="Views\NotificationCenterStyleFlyout.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </Page>
 	</ItemGroup>
 
 </Project>
