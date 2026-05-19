@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using Windows.Graphics;
@@ -12,6 +13,7 @@ using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
@@ -23,6 +25,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -46,6 +49,11 @@ namespace U5BFA.Libraries
         private Point? _customPlacementBottomCenterPoint;
         private TrayIconFlyoutPopupDirection _activePopupDirection = TrayIconFlyoutPopupDirection.BottomToTop;
         private DispatcherTimer? _autoCloseTimer;
+        private DispatcherTimer? _restoreActivationTimer;
+        private int _restoreActivationTickCount;
+        private readonly List<(Control Control, bool IsTabStop)> _suppressedTabStopStates = [];
+        private readonly List<(FrameworkElement Element, bool AllowFocusOnInteraction)> _suppressedInteractionFocusStates = [];
+        private bool _isFocusManagerGettingFocusSubscribed;
         private bool _disposed;
 
         private Grid? RootGrid;
@@ -69,10 +77,20 @@ namespace U5BFA.Libraries
         {
             base.OnApplyTemplate();
 
+            if (RootGrid is not null)
+                RootGrid.GettingFocus -= RootGrid_GettingFocus;
+
             RootGrid = GetTemplateChild(PART_RootGrid) as Grid
                 ?? throw new MissingFieldException($"Could not find {PART_RootGrid} in the given {nameof(TrayIconFlyout)}'s style.");
             IslandsGrid = GetTemplateChild(PART_IslandsGrid) as Grid
                 ?? throw new MissingFieldException($"Could not find {PART_IslandsGrid} in the given {nameof(TrayIconFlyout)}'s style.");
+
+            RootGrid.GettingFocus += RootGrid_GettingFocus;
+            if (!_isFocusManagerGettingFocusSubscribed)
+            {
+                FocusManager.GettingFocus += FocusManager_GettingFocus;
+                _isFocusManagerGettingFocusSubscribed = true;
+            }
 
 #if WASDK
             LayoutUpdated += TrayIconFlyout_LayoutUpdated;
@@ -90,9 +108,14 @@ namespace U5BFA.Libraries
             }
 
             StopAutoCloseTimer();
+            StopRestoreActivationTimer();
             _isPopupAnimationPlaying = true;
+            var shouldActivateOnOpen = ShouldActivateOnOpen();
+            if (!shouldActivateOnOpen)
+                _host.PreserveActivationState();
+
             _host.SetActivationMode(ActivationMode);
-            _host.Maximize(ShouldActivateOnOpen());
+            _host.Maximize(shouldActivateOnOpen);
 
             _ = Task.Run(async () =>
             {
@@ -114,6 +137,7 @@ namespace U5BFA.Libraries
 #if WASDK
                     UpdateBackdropManager();
 #endif
+                    UpdateFocusSuppression();
                     _activePopupDirection = UpdateFlyoutRegion();
 
                     // Ensure to hide first
@@ -122,7 +146,9 @@ namespace U5BFA.Libraries
                     UpdateLayout();
                     await Task.Delay(1);
 
-                    _host.UpdateWindowVisibility(true, ShouldActivateOnOpen());
+                    _host.UpdateWindowVisibility(true, shouldActivateOnOpen);
+                    if (!shouldActivateOnOpen)
+                        RestartRestoreActivationTimer();
 
                     if (IsTransitionAnimationEnabled)
                     {
@@ -150,6 +176,7 @@ namespace U5BFA.Libraries
         public void Hide()
         {
             StopAutoCloseTimer();
+            StopRestoreActivationTimer();
 
             if (_disposed || RootGrid is null || _isPopupAnimationPlaying)
                 return;
@@ -453,12 +480,15 @@ namespace U5BFA.Libraries
             IsOpen = true;
             if (ShouldActivateOnOpen())
                 _host?.NavigateFocus();
+            else
+                RestartRestoreActivationTimer();
             RestartAutoCloseTimer();
         }
 
         private void CompleteClose()
         {
             StopAutoCloseTimer();
+            RestoreFocusSuppression();
             SetClosedTransform(_activePopupDirection);
             _isPopupAnimationPlaying = false;
             IsOpen = false;
@@ -487,12 +517,140 @@ namespace U5BFA.Libraries
             _autoCloseTimer = null;
         }
 
+        private void RestartRestoreActivationTimer()
+        {
+            StopRestoreActivationTimer();
+
+            if (_disposed || ShouldActivateOnOpen())
+                return;
+
+            _restoreActivationTickCount = 0;
+            _host?.RestoreActivationState();
+            _restoreActivationTimer = new() { Interval = TimeSpan.FromMilliseconds(16) };
+            _restoreActivationTimer.Tick += RestoreActivationTimer_Tick;
+            _restoreActivationTimer.Start();
+        }
+
+        private void StopRestoreActivationTimer()
+        {
+            if (_restoreActivationTimer is null)
+                return;
+
+            _restoreActivationTimer.Stop();
+            _restoreActivationTimer.Tick -= RestoreActivationTimer_Tick;
+            _restoreActivationTimer = null;
+            _restoreActivationTickCount = 0;
+        }
+
         private void AutoCloseTimer_Tick(object? sender, object e)
         {
             StopAutoCloseTimer();
 
             if (IsOpen && !_isPopupAnimationPlaying)
                 Hide();
+        }
+
+        private void RestoreActivationTimer_Tick(object? sender, object e)
+        {
+            _host?.RestoreActivationState();
+            _restoreActivationTickCount++;
+
+            if (_restoreActivationTickCount >= 8)
+                StopRestoreActivationTimer();
+        }
+
+        private void RootGrid_GettingFocus(UIElement sender, GettingFocusEventArgs args)
+        {
+            if (ActivationMode is not FlyoutActivationMode.NeverActivate)
+                return;
+
+            args.Cancel = true;
+            args.Handled = true;
+            _host?.RestoreActivationState();
+        }
+
+        private void FocusManager_GettingFocus(object? sender, GettingFocusEventArgs args)
+        {
+            if (ActivationMode is not FlyoutActivationMode.NeverActivate || args.NewFocusedElement is not DependencyObject newFocusedElement)
+                return;
+
+            if (!IsFlyoutElement(newFocusedElement))
+                return;
+
+            args.Cancel = true;
+            args.Handled = true;
+            _host?.RestoreActivationState();
+        }
+
+        private bool IsFlyoutElement(DependencyObject element)
+        {
+            var rootGrid = RootGrid;
+            if (rootGrid is null)
+                return false;
+
+            if (ReferenceEquals(element, this) || ReferenceEquals(element, rootGrid))
+                return true;
+
+            var current = element;
+            while (current is not null)
+            {
+                if (ReferenceEquals(current, this) || ReferenceEquals(current, rootGrid))
+                    return true;
+
+                current = VisualTreeHelper.GetParent(current);
+            }
+
+            return element is FrameworkElement frameworkElement &&
+                rootGrid.XamlRoot is not null &&
+                ReferenceEquals(frameworkElement.XamlRoot, rootGrid.XamlRoot);
+        }
+
+        private void UpdateFocusSuppression()
+        {
+            if (ActivationMode is FlyoutActivationMode.NeverActivate)
+                SuppressFocus();
+            else
+                RestoreFocusSuppression();
+        }
+
+        private void SuppressFocus()
+        {
+            if (RootGrid is null)
+                return;
+
+            RestoreFocusSuppression();
+            SuppressFocus(RootGrid);
+        }
+
+        private void SuppressFocus(DependencyObject element)
+        {
+            if (element is Control control)
+            {
+                _suppressedTabStopStates.Add((control, control.IsTabStop));
+                control.IsTabStop = false;
+            }
+
+            if (element is FrameworkElement frameworkElement)
+            {
+                _suppressedInteractionFocusStates.Add((frameworkElement, frameworkElement.AllowFocusOnInteraction));
+                frameworkElement.AllowFocusOnInteraction = false;
+            }
+
+            var childCount = VisualTreeHelper.GetChildrenCount(element);
+            for (var index = 0; index < childCount; index++)
+                SuppressFocus(VisualTreeHelper.GetChild(element, index));
+        }
+
+        private void RestoreFocusSuppression()
+        {
+            foreach (var (element, allowFocusOnInteraction) in _suppressedInteractionFocusStates)
+                element.AllowFocusOnInteraction = allowFocusOnInteraction;
+
+            foreach (var (control, isTabStop) in _suppressedTabStopStates)
+                control.IsTabStop = isTabStop;
+
+            _suppressedInteractionFocusStates.Clear();
+            _suppressedTabStopStates.Clear();
         }
 
         private Storyboard GetOpenStoryboard(TrayIconFlyoutPopupDirection popupDirection)
@@ -644,12 +802,22 @@ namespace U5BFA.Libraries
 
             _disposed = true;
             StopAutoCloseTimer();
+            StopRestoreActivationTimer();
+            RestoreFocusSuppression();
 
 #if WASDK
             BackdropManager?.Dispose();
             BackdropManager = null;
 #endif
             _host?.WindowInactivated -= HostWindow_Inactivated;
+            if (RootGrid is not null)
+                RootGrid.GettingFocus -= RootGrid_GettingFocus;
+
+            if (_isFocusManagerGettingFocusSubscribed)
+            {
+                FocusManager.GettingFocus -= FocusManager_GettingFocus;
+                _isFocusManagerGettingFocusSubscribed = false;
+            }
             _host?.Dispose();
             IsOpen = false;
 

@@ -149,6 +149,7 @@ namespace U5BFA.Libraries
 				return;
 
 			_host?.SetActivationMode((FlyoutActivationMode)e.NewValue);
+			UpdateFocusSuppression();
 		}
 	}
 }

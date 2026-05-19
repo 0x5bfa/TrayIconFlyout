@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
@@ -36,11 +37,20 @@ namespace U5BFA.Libraries
 	{
 		private const string WindowClassNamePrefix = "TrayIconFlyoutHostClass";
 		private const string WindowName = "TrayIconFlyoutHostWindow";
+		private static readonly object s_cbtHookTargetsLock = new();
+		private static readonly Dictionary<uint, List<XamlIslandHostWindow>> s_cbtHookTargetsByThread = [];
 
 		private readonly WNDPROC _wndProc;
+		private readonly WNDPROC _xamlWndProc;
 		private readonly string _windowClassName = $"{WindowClassNamePrefix}.{Guid.NewGuid():N}";
 
 		private HWND _xamlHwnd = default;
+		private HHOOK _cbtHook = default;
+		private uint _cbtHookThreadId;
+		private HWND _preservedForegroundHWnd = default;
+		private HWND _preservedActiveHWnd = default;
+		private HWND _preservedFocusHWnd = default;
+		private readonly Dictionary<nint, nint> _subclassedXamlWndProcs = [];
 		private bool _disposed;
 		private FlyoutActivationMode _activationMode = FlyoutActivationMode.Activate;
 
@@ -98,6 +108,7 @@ namespace U5BFA.Libraries
 		internal XamlIslandHostWindow()
 		{
 			_wndProc = new(WndProc);
+			_xamlWndProc = new(XamlWndProc);
 
 			WNDCLASSW wndClass = default;
 			wndClass.lpfnWndProc = (delegate* unmanaged[Stdcall]<HWND, uint, WPARAM, LPARAM, LRESULT>)Marshal.GetFunctionPointerForDelegate(_wndProc);
@@ -120,6 +131,32 @@ namespace U5BFA.Libraries
 				return;
 
 			DesktopWindowXamlSource!.Content = content;
+			ApplyActivationModeToWindows();
+		}
+
+		internal void PreserveActivationState()
+		{
+			if (_disposed)
+				return;
+
+			_preservedForegroundHWnd = PInvoke.GetForegroundWindow();
+			_preservedActiveHWnd = PInvoke.GetActiveWindow();
+			_preservedFocusHWnd = PInvoke.GetFocus();
+		}
+
+		internal void RestoreActivationState()
+		{
+			if (_disposed)
+				return;
+
+			if (!_preservedForegroundHWnd.IsNull)
+				PInvoke.SetForegroundWindow(_preservedForegroundHWnd);
+
+			if (!_preservedActiveHWnd.IsNull)
+				PInvoke.SetActiveWindow(_preservedActiveHWnd);
+
+			if (!_preservedFocusHWnd.IsNull)
+				PInvoke.SetFocus(_preservedFocusHWnd);
 		}
 
 		internal void MoveAndResize(RectInt32 rect, bool activate = true)
@@ -176,8 +213,21 @@ namespace U5BFA.Libraries
 #if UWP
 			PInvoke.ShowWindow(_xamlHwnd, command);
 #else
-			if (isVisible) DesktopWindowXamlSource?.SiteBridge.Show(); else DesktopWindowXamlSource?.SiteBridge.Hide();
+			if (isVisible)
+			{
+				if (activate)
+					DesktopWindowXamlSource?.SiteBridge.Show();
+				else
+					PInvoke.ShowWindow(_xamlHwnd, command);
+			}
+			else
+			{
+				DesktopWindowXamlSource?.SiteBridge.Hide();
+			}
 #endif
+
+			if (isVisible)
+				ApplyActivationModeToWindows();
 		}
 
 		internal void SetActivationMode(FlyoutActivationMode activationMode)
@@ -186,9 +236,102 @@ namespace U5BFA.Libraries
 				return;
 
 			_activationMode = activationMode;
-			var neverActivate = activationMode is FlyoutActivationMode.NeverActivate;
+			ApplyActivationModeToWindows();
+		}
+
+		private void ApplyActivationModeToWindows()
+		{
+			var neverActivate = _activationMode is FlyoutActivationMode.NeverActivate;
+			UpdateCbtHook(neverActivate);
+			if (neverActivate)
+				RefreshXamlIslandWindowSubclasses();
+
 			SetNoActivateStyle(HWnd, neverActivate);
-			SetNoActivateStyle(_xamlHwnd, neverActivate);
+
+			foreach (var hWnd in _subclassedXamlWndProcs.Keys)
+				SetNoActivateStyle((HWND)hWnd, neverActivate);
+
+			if (!neverActivate)
+				UnsubclassXamlIslandWindows();
+		}
+
+		private void UpdateCbtHook(bool enabled)
+		{
+			if (enabled)
+			{
+				EnsureCbtHook();
+				return;
+			}
+
+			RemoveCbtHook();
+		}
+
+		private void EnsureCbtHook()
+		{
+			if (_cbtHook != HHOOK.Null)
+				return;
+
+			_cbtHookThreadId = PInvoke.GetCurrentThreadId();
+			_cbtHook = PInvoke.SetWindowsHookEx(
+				WINDOWS_HOOK_ID.WH_CBT,
+				&CbtHookProc,
+				HINSTANCE.Null,
+				_cbtHookThreadId);
+
+			if (_cbtHook != HHOOK.Null)
+				RegisterCbtHookTarget(_cbtHookThreadId);
+		}
+
+		private void RemoveCbtHook()
+		{
+			if (_cbtHook == HHOOK.Null)
+				return;
+
+			PInvoke.UnhookWindowsHookEx(_cbtHook);
+			_cbtHook = default;
+			UnregisterCbtHookTarget(_cbtHookThreadId);
+			_cbtHookThreadId = 0;
+		}
+
+		private void RegisterCbtHookTarget(uint threadId)
+		{
+			lock (s_cbtHookTargetsLock)
+			{
+				if (!s_cbtHookTargetsByThread.TryGetValue(threadId, out var targets))
+				{
+					targets = [];
+					s_cbtHookTargetsByThread[threadId] = targets;
+				}
+
+				if (!targets.Contains(this))
+					targets.Add(this);
+			}
+		}
+
+		private void UnregisterCbtHookTarget(uint threadId)
+		{
+			if (threadId == 0)
+				return;
+
+			lock (s_cbtHookTargetsLock)
+			{
+				if (!s_cbtHookTargetsByThread.TryGetValue(threadId, out var targets))
+					return;
+
+				targets.Remove(this);
+				if (targets.Count == 0)
+					s_cbtHookTargetsByThread.Remove(threadId);
+			}
+		}
+
+		private static XamlIslandHostWindow[] GetCbtHookTargets(uint threadId)
+		{
+			lock (s_cbtHookTargetsLock)
+			{
+				return s_cbtHookTargetsByThread.TryGetValue(threadId, out var targets)
+					? [.. targets]
+					: [];
+			}
 		}
 
 #if UWP
@@ -218,6 +361,66 @@ namespace U5BFA.Libraries
 				: exStyle & ~WINDOW_EX_STYLE.WS_EX_NOACTIVATE;
 
 			PInvoke.SetWindowLong(hWnd, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, (int)exStyle);
+			PInvoke.SetWindowPos(
+				hWnd,
+				HWND.Null,
+				0,
+				0,
+				0,
+				0,
+				SET_WINDOW_POS_FLAGS.SWP_NOMOVE |
+				SET_WINDOW_POS_FLAGS.SWP_NOSIZE |
+				SET_WINDOW_POS_FLAGS.SWP_NOZORDER |
+				SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE |
+				SET_WINDOW_POS_FLAGS.SWP_FRAMECHANGED);
+		}
+
+		private void RefreshXamlIslandWindowSubclasses()
+		{
+			if (_xamlHwnd.IsNull)
+				return;
+
+			SubclassXamlIslandWindow(_xamlHwnd);
+			SubclassChildWindows(HWnd);
+			SubclassChildWindows(_xamlHwnd);
+		}
+
+		private void SubclassChildWindows(HWND parentHWnd)
+		{
+			for (var childHWnd = PInvoke.GetWindow(parentHWnd, GET_WINDOW_CMD.GW_CHILD);
+				!childHWnd.IsNull;
+				childHWnd = PInvoke.GetWindow(childHWnd, GET_WINDOW_CMD.GW_HWNDNEXT))
+			{
+				SubclassXamlIslandWindow(childHWnd);
+				SubclassChildWindows(childHWnd);
+			}
+		}
+
+		private void SubclassXamlIslandWindow(HWND hWnd)
+		{
+			if (hWnd.IsNull || _subclassedXamlWndProcs.ContainsKey((nint)hWnd.Value))
+				return;
+
+			var previousWndProc = (nint)PInvoke.SetWindowLongPtr(
+				hWnd,
+				WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC,
+				Marshal.GetFunctionPointerForDelegate(_xamlWndProc));
+
+			_subclassedXamlWndProcs[(nint)hWnd.Value] = previousWndProc;
+		}
+
+		private void UnsubclassXamlIslandWindows()
+		{
+			foreach (var item in _subclassedXamlWndProcs)
+			{
+				var hWnd = (HWND)item.Key;
+				if (hWnd.IsNull)
+					continue;
+
+				PInvoke.SetWindowLongPtr(hWnd, WINDOW_LONG_PTR_INDEX.GWLP_WNDPROC, item.Value);
+			}
+
+			_subclassedXamlWndProcs.Clear();
 		}
 
 		private void InitializeDesktopWindowXamlSource()
@@ -263,8 +466,10 @@ namespace U5BFA.Libraries
 
 #elif WASDK
 			DesktopWindowXamlSource!.Initialize(Win32Interop.GetWindowIdFromWindow(HWnd));
-			_xamlHwnd = (HWND)(nint)DesktopWindowXamlSource.SiteBridge.WindowId.Value;
+			_xamlHwnd = (HWND)Win32Interop.GetWindowFromWindowId(DesktopWindowXamlSource.SiteBridge.WindowId);
 #endif
+
+			ApplyActivationModeToWindows();
 		}
 
 		private LRESULT WndProc(HWND hWnd, uint uMsg, WPARAM wParam, LPARAM lParam)
@@ -292,21 +497,29 @@ namespace U5BFA.Libraries
 							PInvoke.SendMessage(_coreHwnd, uMsg, wParam, lParam);
 					}
 					break;
-				case PInvoke.WM_SETFOCUS:
-					{
-						if (_activationMode is FlyoutActivationMode.NeverActivate)
-							break;
-
-						if (_xamlHwnd != default)
-							PInvoke.SetFocus(_xamlHwnd);
-					}
-					break;
 				case PInvoke.WM_DESTROY:
 					{
 						PInvoke.PostQuitMessage(0);
 					}
 					break;
 #endif
+				case PInvoke.WM_SETFOCUS:
+					{
+						if (_activationMode is FlyoutActivationMode.NeverActivate)
+						{
+							RestoreActivationState();
+							return (LRESULT)0;
+						}
+
+#if UWP
+						if (_xamlHwnd != default)
+							PInvoke.SetFocus(_xamlHwnd);
+
+						return (LRESULT)0;
+#else
+						return PInvoke.DefWindowProc(hWnd, uMsg, wParam, lParam);
+#endif
+					}
 				case PInvoke.WM_ACTIVATE:
 					{
 						if (LOWORD((nint)(nuint)wParam) == PInvoke.WA_INACTIVE)
@@ -316,7 +529,10 @@ namespace U5BFA.Libraries
 				case PInvoke.WM_MOUSEACTIVATE:
 					{
 						if (_activationMode is FlyoutActivationMode.NeverActivate)
+						{
+							RestoreActivationState();
 							return (LRESULT)(int)PInvoke.MA_NOACTIVATE;
+						}
 
 						return PInvoke.DefWindowProc(hWnd, uMsg, wParam, lParam);
 					}
@@ -329,6 +545,92 @@ namespace U5BFA.Libraries
 			return (LRESULT)0;
 		}
 
+		private LRESULT XamlWndProc(HWND hWnd, uint uMsg, WPARAM wParam, LPARAM lParam)
+		{
+			switch (uMsg)
+			{
+				case PInvoke.WM_MOUSEACTIVATE:
+					{
+						if (_activationMode is FlyoutActivationMode.NeverActivate)
+						{
+							RestoreActivationState();
+							return (LRESULT)(int)PInvoke.MA_NOACTIVATE;
+						}
+
+						break;
+					}
+				case PInvoke.WM_SETFOCUS:
+					{
+						if (_activationMode is FlyoutActivationMode.NeverActivate)
+						{
+							RestoreActivationState();
+							return (LRESULT)0;
+						}
+
+						break;
+					}
+			}
+
+			return CallPreviousXamlWndProc(hWnd, uMsg, wParam, lParam);
+		}
+
+		[UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+		private static LRESULT CbtHookProc(int code, WPARAM wParam, LPARAM lParam)
+		{
+			if (code >= 0 && (code == PInvoke.HCBT_ACTIVATE || code == PInvoke.HCBT_SETFOCUS))
+			{
+				var targetHWnd = (HWND)(nint)(nuint)wParam;
+				foreach (var target in GetCbtHookTargets(PInvoke.GetCurrentThreadId()))
+				{
+					if (target._activationMode is FlyoutActivationMode.NeverActivate && target.IsFlyoutWindow(targetHWnd))
+					{
+						target.RestoreActivationState();
+						return (LRESULT)1;
+					}
+				}
+			}
+
+			return PInvoke.CallNextHookEx(HHOOK.Null, code, wParam, lParam);
+		}
+
+		private bool IsFlyoutWindow(HWND hWnd)
+		{
+			if (hWnd.IsNull)
+				return false;
+
+			if (hWnd == HWnd || hWnd == _xamlHwnd)
+				return true;
+
+			if (_subclassedXamlWndProcs.ContainsKey((nint)hWnd.Value))
+				return true;
+
+			if (!HWnd.IsNull && PInvoke.IsChild(HWnd, hWnd))
+				return true;
+
+			if (!_xamlHwnd.IsNull && PInvoke.IsChild(_xamlHwnd, hWnd))
+				return true;
+
+			var rootHWnd = PInvoke.GetAncestor(hWnd, GET_ANCESTOR_FLAGS.GA_ROOT);
+			if (rootHWnd == HWnd || rootHWnd == _xamlHwnd)
+				return true;
+
+			var rootOwnerHWnd = PInvoke.GetAncestor(hWnd, GET_ANCESTOR_FLAGS.GA_ROOTOWNER);
+			return rootOwnerHWnd == HWnd || rootOwnerHWnd == _xamlHwnd;
+		}
+
+		private LRESULT CallPreviousXamlWndProc(HWND hWnd, uint uMsg, WPARAM wParam, LPARAM lParam)
+		{
+			if (!_subclassedXamlWndProcs.TryGetValue((nint)hWnd.Value, out var previousWndProc) || previousWndProc == 0)
+				return PInvoke.DefWindowProc(hWnd, uMsg, wParam, lParam);
+
+			return PInvoke.CallWindowProc(
+				(delegate* unmanaged[Stdcall]<HWND, uint, WPARAM, LPARAM, LRESULT>)(void*)previousWndProc,
+				hWnd,
+				uMsg,
+				wParam,
+				lParam);
+		}
+
 		public void Dispose()
 		{
 			if (_disposed)
@@ -338,6 +640,8 @@ namespace U5BFA.Libraries
 
 			try
 			{
+				RemoveCbtHook();
+				UnsubclassXamlIslandWindows();
 				DesktopWindowXamlSource?.Dispose();
 			}
 			catch { }

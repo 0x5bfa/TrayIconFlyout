@@ -7,6 +7,9 @@ MA_NOACTIVATE
 WM_*
 S_OK
 HWND_TOP
+WINDOWS_HOOK_ID
+HCBT_ACTIVATE
+HCBT_SETFOCUS
 HSTRING
 
 IDesktopWindowXamlSourceNative2
@@ -30,6 +33,14 @@ SetFocus
 SetLayeredWindowAttributes
 GetWindowLong
 SetWindowLong
+CallWindowProc
+GetWindow
+GetAncestor
+IsChild
+SetWindowsHookEx
+UnhookWindowsHookEx
+CallNextHookEx
+GetCurrentThreadId
 Shell_NotifyIcon
 RegisterWindowMessage
 SetForegroundWindow
@@ -43,6 +54,10 @@ UnregisterClass
 GetWindowRect
 IsWindowVisible
 ShowWindow
+GetForegroundWindow
+GetActiveWindow
+GetFocus
+SetActiveWindow
 CreateRectRgn
 SetWindowRgn
 DeleteObject
